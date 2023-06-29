@@ -1,0 +1,15 @@
+names:
+- biker
+- car
+- people
+- truck
+nc: 4
+roboflow:
+  license: CC BY 4.0
+  project: manaus_traffic
+  url: https://universe.roboflow.com/tamaturgo/manaus_traffic/dataset/1
+  version: 1
+  workspace: tamaturgo
+test: test/images
+train: train/images
+val: valid/images
