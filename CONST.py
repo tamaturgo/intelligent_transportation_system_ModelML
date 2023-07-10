@@ -6,11 +6,11 @@ LOGGING = False
 
 classesFile = "models/classes.names"
 model_path = 'models\yolov8_small_datav4.pt'
-confThreshold = 0.2  # Confidence threshold
+confThreshold = 0.8  # Confidence threshold
 nmsThreshold = 0.4  # Non-maximum suppression threshold
 inpWidth = 416  # 416     # Width of network's input image
 inpHeight = 416  # 416     # Height of network's input image
-skip_rate = 5
+skip_rate = 30
 
 COLORS = [
     (0, 0, 255),
