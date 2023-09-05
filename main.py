@@ -15,7 +15,7 @@ arg.add_argument("-c", "--camera", type=int, default=0,
                  help="Camera location: 0 - DownTown, 1 - Arena, 2 - Constantino, 3 - Djalma, 4 - Efigenio")
 
 if arg.parse_args().video:
-    SOURCE = 'datasets/videos/batecarroarena.mkv'
+    SOURCE = 'datasets/videos/batecarro.mp4'
 elif arg.parse_args().stream:
     SOURCE = 'https://www.youtube.com/watch?v=_3o-_5AIOWs'
 else:
@@ -27,7 +27,7 @@ if arg.parse_args().stream:
                      logging=LOGGING, **options).start()
 
 
-tracker = Tracker(threshold=90, age_threshold=5)
+tracker = Tracker(threshold=90, age_threshold=15)
 count_frame = 0
 cap = cv2.VideoCapture(SOURCE)
 while True:
@@ -46,11 +46,11 @@ while True:
     height = int(frame.shape[0] / 2)
 
     # Redimensiona o frame
-    camera1 = frame[0:height, 0:width]  # Constantino
-    camera2 = frame[0:height, width:width * 2]  # Djalma
-    camera3 = frame[height:height * 2, 0:width]  # Efigenio
-    camera4 = frame[height:height * 2, width:width * 2]  # Arena
-    frame = camera2
+    # camera1 = frame[0:height, 0:width]  # Constantino
+    # camera2 = frame[0:height, width:width * 2]  # Djalma
+    # camera3 = frame[height:height * 2, 0:width]  # Efigenio
+    # camera4 = frame[height:height * 2, width:width * 2]  # Arena
+    # frame = camera2
 
     frame = cv2.resize(frame, (1920 // 2, 1080 // 2)) # 960 x 540
     cv2.imwrite('frame.jpg', frame)
@@ -72,9 +72,7 @@ while True:
             frame = track_downtown(
                 frame, frame_without_draw, objid, box, label, color)
             
-        if arg.parse_args().camera == 3:
-            frame = track_djalma(
-                frame, frame_without_draw, objid, box, label, color)
+        
 
     cv2.imshow("Frame", frame)
     key = cv2.waitKey(1) & 0xFF
