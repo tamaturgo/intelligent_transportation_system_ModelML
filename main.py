@@ -1,84 +1,133 @@
+import json
 import cv2
+import tkinter as tk
 from CONST import *
 from vidgear.gears import CamGear
 from Tracker import Tracker
-from argparse import ArgumentParser
-import numpy as np
-import time
 from controllers import *
-
-arg = ArgumentParser()
-arg.add_argument("-v", "--video", action="store_true", help="Video mode")
-arg.add_argument("-s", "--stream", action="store_true", help="Stream mode")
-# Select Camera location
-arg.add_argument("-c", "--camera", type=int, default=0,
-                 help="Camera location: 0 - DownTown, 1 - Arena, 2 - Constantino, 3 - Djalma, 4 - Efigenio")
-
-if arg.parse_args().video:
-    SOURCE = 'datasets/videos/batecarro.mp4'
-elif arg.parse_args().stream:
-    SOURCE = 'https://www.youtube.com/watch?v=_3o-_5AIOWs'
-else:
-    SOURCE = 0
-
-if arg.parse_args().stream:
-    stream = CamGear(source=SOURCE,
-                     stream_mode=True,
-                     logging=LOGGING, **options).start()
+import customtkinter
+from PIL import ImageTk, Image
+from GUI.MenuFrame import MenuFrame
+from GUI.ImageFrame import ImageFrame
+from GUI.SecundaryMenuFrame import SecundaryMenuFrame
+from GUI.BottomMenu import BottomMenu
+customtkinter.set_appearance_mode('dark')
+customtkinter.set_default_color_theme('green')
 
 
-tracker = Tracker(threshold=90, age_threshold=15)
-count_frame = 0
-cap = cv2.VideoCapture(SOURCE)
-while True:
-    count_frame += 1
+def exit(self):
+    cv2.destroyAllWindows()
+    self.window.destroy()
+    self.video_capture.release()
 
-    if arg.parse_args().stream:
-        frame = stream.read()
-    else:
-        _, frame = cap.read()
-   
-    if count_frame % skip_rate != 0:
-        continue
 
-    # Divide o frame em 4 partes
-    width = int(frame.shape[1] / 2)
-    height = int(frame.shape[0] / 2)
+class IntelligentTransportationSystem:
+    def __init__(self, window, source):
+        self.window = window
+        self.window.title("Intelligent Transportation System")
+        self.window.resizable(False, False)
+        self.window.geometry("1280x720")
+        self.window.grid_rowconfigure(0, weight=1)
+        self.window.grid_columnconfigure(0, weight=1)
+        self.current_frame = None
+        if (source != 'stream'):
+            self.video_capture = cv2.VideoCapture(
+                './datasets/videos/batecarro.mp4')
+            self.stream = None
+        else:
+            self.stream = CamGear(source='https://www.youtube.com/watch?v=ByED80IKdIU',
+                                  stream_mode=True,
+                                  logging=LOGGING, **options).start()
+            self.video_capture = None
 
-    # Redimensiona o frame
-    # camera1 = frame[0:height, 0:width]  # Constantino
-    # camera2 = frame[0:height, width:width * 2]  # Djalma
-    # camera3 = frame[height:height * 2, 0:width]  # Efigenio
-    # camera4 = frame[height:height * 2, width:width * 2]  # Arena
-    # frame = camera2
+        self.tracker = Tracker(threshold=90, age_threshold=15)
+        self.skip_rate = 5
+        self.frame_count = 0
+        self.source = source
+        self.action_context = {
+            "action": None,
+            "payload": None
+        }
+        with open('context.json', 'w') as outfile:
+            json.dump(self.action_context, outfile)
+        self.draw_gui()
+        self.update_frame()
 
-    frame = cv2.resize(frame, (1920 // 2, 1080 // 2)) # 960 x 540
-    cv2.imwrite('frame.jpg', frame)
+    def draw_gui(self):
+        self.menu_frame = MenuFrame(self.window, width=380, height=720)
+        self.menu_frame.grid(row=0, column=0, padx=10,
+                             pady=10, rowspan=2, sticky="NSEW")
 
-    # save a copy of the frame without draw
-    frame_without_draw = frame.copy()
+        self.image_frame = ImageFrame(self.window, fg_color="black")
+        self.image_frame.grid(row=0, column=1)
 
-    # Pass the frame to the model
-    (classes_id, object_ids, boxes) = tracker.update(frame)
+        self.secundary_menu_frame = SecundaryMenuFrame(self.window)
+        self.secundary_menu_frame.grid(
+            row=0, column=2, padx=10, pady=10, rowspan=2, sticky="NSEW")
 
-    for (classid, objid, box) in zip(classes_id, object_ids, boxes):
-        classes_id = int(classid)
-        color = COLORS[classes_id % len(COLORS)]
-        label = "%s:%d" % (CLASSES[classes_id], objid)
+        self.bottom_frame = BottomMenu(self.window)
+        self.bottom_frame.grid(row=1, column=1, padx=10,
+                               pady=10, sticky="NSEW")
 
-        # If camera location is Downtown
-        if arg.parse_args().camera == 0:
-            print
-            frame = track_downtown(
-                frame, frame_without_draw, objid, box, label, color)
+        self.canvas = self.image_frame.canvas
+
+    def update_frame(self):
+        # Update context read the last action
+        with open('context.json', 'r') as f:
+            context = json.load(f)
+            self.action_context["action"] = context["action"]
+            self.action_context["payload"] = context["payload"]
             
-        
 
-    cv2.imshow("Frame", frame)
-    key = cv2.waitKey(1) & 0xFF
-    if key == ord("q"):
-        break
+        self.frame_count += 1
+        if (self.source == 'stream'):
+            frame = self.stream.read()
+        else:
+            _, frame = self.video_capture.read()
+
+        if self.frame_count % self.skip_rate != 0:
+            self.window.after(15, self.update_frame)
+            return
+
+        frame = cv2.resize(frame, outputResolution)
+
+        (classes_id, object_ids, boxes) = self.tracker.update(frame)
+        for (classid, objid, box) in zip(classes_id, object_ids, boxes):
+            classes_id = int(classid)
+            color = COLORS[classes_id % len(COLORS)]
+            label = "%s:%d" % (CLASSES[classes_id], objid)
+            frame = track_downtown(
+                frame, frame, objid, box, label, color)
+
+        self.current_frame = Image.fromarray(
+            cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        self.photo = ImageTk.PhotoImage(image=self.current_frame)
+        self.canvas.create_image(0, 0, image=self.photo, anchor=tk.NW)
+        self.window.after(15, self.update_frame)
+
+        show_area_menu(self)
 
 
-cv2.destroyAllWindows()
-stream.stop()
+
+def clear_action_context(self):
+    self.action_context["action"] = None
+    self.action_context["payload"] = None
+    with open('context.json', 'w') as outfile:
+        json.dump(self.action_context, outfile)
+
+def show_area_menu(self):
+    if (self.action_context["action"] == "add area"):
+        self.secundary_menu_frame.active_area_menu()
+        self.action_context["action"] = None
+        self.action_context["payload"] = None
+        clear_action_context(self)
+    elif (self.action_context["action"] == "cancel_area"):
+        self.secundary_menu_frame.disable_area_menu()
+        self.action_context["action"] = None
+        self.action_context["payload"] = None
+
+
+if __name__ == "__main__":
+    root = customtkinter.CTk()
+    app = IntelligentTransportationSystem(root, 'video')
+    root.mainloop()

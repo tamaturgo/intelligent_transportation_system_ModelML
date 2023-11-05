@@ -3,3 +3,7 @@ roboflow
 opencv-python
 vidgear
 numpy
+pandas
+customtkinter
+moviepy
+yt_dlp

@@ -8,13 +8,14 @@ with open(classesFile, 'rt') as f:
     classes = f.read().rstrip('\n').split('\n')
 
 class Tracker:
-    def __init__(self, threshold, age_threshold):
+    def __init__(self, threshold, age_threshold, show_history=False):
         self.next_id = 0
         self.tracks = []
         self.last_center10 = []
         self.threshold = threshold
         self.age_threshold = age_threshold
         self.model = YOLO(model_path, "v8")
+        self.show_history = show_history
 
     def get_center(self, bbox):
         x = int(bbox[0] + (bbox[2] - bbox[0]) / 2)
@@ -101,14 +102,10 @@ class Tracker:
             detections_boxes.append(track['bbox'])
             detections_ids.append(track['id'])
         
-        # # Show last 10 center
-        # for i in range(len(self.last_center10)):
-        #     # Color Gradient
-        #     color = (int(255 * i / len(self.last_center10)), 0, 0)
-        #     cv2.circle(frame, (int(self.last_center10[i][0]), int(self.last_center10[i][1])), 5, color, -1)
+        if(self.show_history):
+            for i in range(len(self.last_center10)):
+                color = (int(255 * i / len(self.last_center10)), 0, 0)
+                cv2.circle(frame, (int(self.last_center10[i][0]), int(self.last_center10[i][1])), 5, color, -1)
 
-
-
-       
                 
         return classes_ids,detections_ids, detections_boxes 
