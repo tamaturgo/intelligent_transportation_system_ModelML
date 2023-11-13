@@ -12,7 +12,7 @@ inpWidth = 1280  # 416     # Width of network's input image
 inpHeight = 720  # 416     # Height of network's input image
 skip_rate = 5  # 2
 
-outputResolution = (800, 600)
+outputResolution = (640, 360)
 
 COLORS = [
     (0, 0, 255),

@@ -16,6 +16,7 @@ class Tracker:
         self.age_threshold = age_threshold
         self.model = YOLO(model_path, "v8")
         self.show_history = show_history
+        print ("Tracker initialized")
 
     def get_center(self, bbox):
         x = int(bbox[0] + (bbox[2] - bbox[0]) / 2)
@@ -23,7 +24,8 @@ class Tracker:
         return np.array([x, y], dtype=np.float32)
 
     def update(self, frame):
-        detections_model = self.model(frame, agnostic_nms=True)[0]
+        # Without logging
+        detections_model = self.model(frame, agnostic_nms=True, verbose=False)[0]
         boxes = detections_model.boxes.data
         scores = detections_model.boxes.conf
         cls = detections_model.boxes.cls
