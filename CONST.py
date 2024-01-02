@@ -11,7 +11,7 @@ nmsThreshold = 0.81  # Non-maximum suppression threshold
 inpWidth = 1280  # 416     # Width of network's input image
 inpHeight = 720  # 416     # Height of network's input image
 skip_rate = 5  # 2
-
+areas_file = "./areas.txt"
 outputResolution = (640, 360)
 
 COLORS = [

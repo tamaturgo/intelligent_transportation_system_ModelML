@@ -1,21 +1,48 @@
 import sqlite3
-import os
 
+conn = sqlite3.connect('its.db')
+cursor = conn.cursor()
 
-enum_types = {
-    'rule_type': ['speed', 'time', 'stop', 'parking', 'no_entry', 'no_turn'],
-    'rule_enable': ['true', 'false']
-}
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS poligonos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        pontos TEXT
+    )
+''')
 
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS regras (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        poligono_id INTEGER,
+        tipo TEXT,
+        valor REAL,
+        aux_valor REAL,
+        criado_em DATE
+    )    
+''')
 
-def migrate():
-    # Create a connection to the database
-    conn = sqlite3.connect('its.db')
-    c = conn.cursor()
+cursor.execute('''
+               CREATE TABLE IF NOT EXISTS rel_poligonos_regras (
+                     poligono_id INTEGER,
+                     regra_id INTEGER
+                )
+''')
 
-    # Create the tables
-    c.execute('''CREATE TABLE IF NOT EXISTS area
-        (id INTEGER PRIMARY KEY, name TEXT, description TEXT, polygon TEXT)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS rule
-        (id INTEGER PRIMARY KEY, name TEXT, type TEXT, enable BOOLEAN, class TEXT,
-        value TEXT, area_id INTEGER, FOREIGN KEY(area_id) REFERENCES area(id))''')
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS images (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT,
+        data DATE
+    )   
+''')
+
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS videos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nome TEXT,
+        data DATE,
+        duracao INTEGER
+    )
+''')
+conn.commit()
+conn.close()
