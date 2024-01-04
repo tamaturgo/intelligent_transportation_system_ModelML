@@ -27,4 +27,4 @@ COLORS = [
     (255, 0, 255),
 ]
 
-CLASSES = open(classesFile).read().strip().split("\n")
+CLASSES = ["motorbike","car", "cycle", "person","truck"]

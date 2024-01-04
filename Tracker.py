@@ -2,12 +2,12 @@ import cv2
 import numpy as np
 from CONST import  model_path, classesFile, confThreshold
 from ultralytics import YOLO
-from its.AreaService import AreaManager
+
+
 classes = None
 
 with open(classesFile, 'rt') as f:
     classes = f.read().rstrip('\n').split('\n')
-
 
 class DetectionFilter:
     @staticmethod
@@ -80,12 +80,11 @@ class TrackManager:
 class Tracker:
     next_id = 0
 
-    def __init__(self, threshold, age_threshold, show_history=False, areas_file="./areas.txt"):
+    def __init__(self, threshold, age_threshold, show_history=False):
         self.threshold = threshold
         self.age_threshold = age_threshold
         self.model = YOLO(model_path, "v8")
         self.show_history = show_history
-        self.areas_manager = AreaManager(areas_file)
         self.tracks = []
         self.last_center10 = []
         print("Tracker initialized")
@@ -106,8 +105,6 @@ class Tracker:
 
         classes_ids, detections_ids, detections_boxes = self.extract_track_info()
 
-        if self.show_history:
-            self.draw_history(frame)
 
         return classes_ids, detections_ids, detections_boxes
 
