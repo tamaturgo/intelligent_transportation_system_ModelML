@@ -13,7 +13,6 @@ cursor.execute('''
 cursor.execute('''
     CREATE TABLE IF NOT EXISTS regras (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        poligono_id INTEGER,
         tipo TEXT,
         valor REAL,
         aux_valor REAL,

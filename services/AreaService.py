@@ -13,9 +13,14 @@ class Poligono(Base):
 class Regra(Base):
     __tablename__ = 'regras'
     id = Column(Integer, primary_key=True)
-    poligono_id = Column(Integer)
     tipo = Column(String)
     valor = Column(Integer)
+    aux_valor = Column(Integer)
+
+class rel_poligonos_regras(Base):
+    __tablename__ = 'rel_poligonos_regras'
+    poligono_id = Column(Integer, primary_key=True)
+    regra_id = Column(Integer, primary_key=True)
 
 class AreaService:
     def __init__(self):
@@ -45,10 +50,10 @@ class AreaService:
 
     def get_area_info(self, id):
         area = self.session.query(Poligono).filter(Poligono.id == id).first()
-        rules = self.session.query(Regra).filter(Regra.poligono_id == id).all()
+        rules = self.session.query(Regra).join(rel_poligonos_regras, Regra.id == rel_poligonos_regras.regra_id).filter(rel_poligonos_regras.poligono_id == id).all()
         rules_retur = []
         for rule in rules:
-            rules_retur.append({'id': rule.id, 'type': rule.tipo, 'value': rule.valor})
+            rules_retur.append({'id': rule.id, 'type': rule.tipo, 'value': rule.valor, 'aux_value': rule.aux_valor})
 
         pontos = area.pontos.split(';')
         pontos = [{'x': int(ponto.split(',')[0]), 'y': int(

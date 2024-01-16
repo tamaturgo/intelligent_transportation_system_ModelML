@@ -42,9 +42,12 @@ class VideoService:
     def get_videos_at_folder(self):
         videos = []
         for file in os.listdir('videos/'):
-            videos.append(
-                file
-            )
+            regex_file = file.split('.')
+            # if is a file 
+            if len(regex_file) > 1:
+                videos.append(
+                    file
+                )
         return videos
 
     def video_to_opencv(self, video):
